@@ -1,0 +1,365 @@
+
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invitación Cúpula IBK + RSVP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <script type="module" src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"></script>
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #111;
+        }
+        h1, h2, h3 {
+            font-family: 'Bebas Neue', cursive;
+        }
+        .bg-pattern {
+            background-image: radial-gradient(#2a2a2a 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .glass-panel {
+            background: rgba(31, 41, 55, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        /* Loading Animation */
+        .typing-indicator span {
+            animation: blink 1.4s infinite both;
+            height: 5px;
+            width: 5px;
+            background-color: white;
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 1px;
+        }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes blink {
+            0% { opacity: 0.1; }
+            20% { opacity: 1; }
+            100% { opacity: 0.1; }
+        }
+        /* Custom Scrollbar for list */
+        .attendee-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        .attendee-list::-webkit-scrollbar-track {
+            background: #1f2937; 
+        }
+        .attendee-list::-webkit-scrollbar-thumb {
+            background: #4b5563; 
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="bg-pattern text-white min-h-screen flex items-center justify-center p-4">
+
+    <div class="max-w-md w-full bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl shadow-2xl overflow-hidden relative mb-10">
+        
+        <!-- Header Image Area -->
+        <div class="h-48 bg-cover bg-center relative" style="background-image: url('https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=1000&auto=format&fit=crop');">
+            <div class="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center">
+                <div class="text-center transform -rotate-2 border-4 border-orange-500 p-2">
+                    <h1 class="text-6xl text-white tracking-widest leading-none">PARRILLA</h1>
+                    <h2 class="text-3xl text-orange-500">REENCUENTRO</h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="p-6 space-y-6">
+            
+            <div class="text-center">
+                <h3 class="text-3xl font-bold text-gray-200 tracking-wide uppercase">CÚPULA IBK</h3>
+                <p class="text-orange-400 text-sm mt-1 font-bold tracking-widest">EDICIÓN VERANO</p>
+            </div>
+
+            <!-- Info Blocks with Calendar Button -->
+            <div class="space-y-3">
+                <div class="flex items-center justify-between bg-gray-800 p-3 rounded-lg border-l-4 border-orange-500">
+                    <div class="flex items-center space-x-3">
+                        <i data-lucide="calendar" class="text-orange-500 w-6 h-6"></i>
+                        <div>
+                            <p class="text-xs text-gray-400 uppercase font-bold">Fecha</p>
+                            <p class="text-md font-bold">Viernes 30 de Enero</p>
+                        </div>
+                    </div>
+                    <!-- Calendar Add Button -->
+                    <a href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=Parrilla+Reencuentro+Cúpula+IBK&dates=20260130T220000Z/20260131T070000Z&details=Reencuentro+oficial.+Traer+nuevos+temas+de+conversación.&location=Av.+Arequipa+2651,+Lince+(Terraza)" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full transition shadow-lg" title="Agendar en Google Calendar">
+                        <i data-lucide="calendar-plus" class="w-5 h-5"></i>
+                    </a>
+                </div>
+
+                <div class="flex items-center space-x-4 bg-gray-800 p-3 rounded-lg border-l-4 border-orange-500">
+                    <i data-lucide="clock" class="text-orange-500 w-6 h-6"></i>
+                    <div>
+                        <p class="text-xs text-gray-400 uppercase font-bold">Horario</p>
+                        <p class="text-md font-bold">5:00 PM - 02:00 AM</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-4 bg-gray-800 p-3 rounded-lg border-l-4 border-orange-500">
+                    <i data-lucide="map-pin" class="text-orange-500 w-6 h-6"></i>
+                    <div>
+                        <p class="text-xs text-gray-400 uppercase font-bold">Lugar</p>
+                        <p class="text-md font-bold">Av. Arequipa 2651, Lince (Terraza)</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RSVP Section (Real Database) -->
+            <div class="glass-panel rounded-xl p-4 mt-4">
+                <div class="flex items-center gap-2 mb-3 border-b border-gray-700 pb-2">
+                    <i data-lucide="users" class="text-green-400 w-5 h-5"></i>
+                    <h3 class="text-green-400 text-lg tracking-wide">Confirmar Asistencia</h3>
+                </div>
+                
+                <div class="space-y-3">
+                    <div class="flex gap-2">
+                        <input type="text" id="rsvpNameInput" placeholder="Escribe tu Nombre y Apellido" class="bg-gray-900 border border-gray-700 text-white text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block w-full p-2.5">
+                        <button onclick="submitRSVP()" id="btnSubmitRSVP" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">
+                            Confirmar
+                        </button>
+                    </div>
+                    
+                    <!-- Attendees List -->
+                    <div class="mt-4">
+                        <p class="text-xs text-gray-400 mb-2 font-bold uppercase">Ya confirmaron:</p>
+                        <ul id="attendeesList" class="attendee-list max-h-32 overflow-y-auto space-y-2 text-sm text-gray-300">
+                            <li class="text-center italic text-gray-500 text-xs py-2">Cargando lista...</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-700 my-4"></div>
+
+            <!-- ✨ AI FEATURES SECTION ✨ -->
+            <div class="bg-gray-800/30 rounded-xl p-4 border border-purple-500/20">
+                <div class="flex items-center gap-2 mb-3">
+                    <i data-lucide="sparkles" class="text-purple-400 w-5 h-5"></i>
+                    <h3 class="text-purple-400 text-lg tracking-wide">Zona AI</h3>
+                </div>
+
+                <!-- Feature 1: Topic Generator -->
+                <div class="mb-4">
+                    <button onclick="generateTopic()" id="btnTopic" class="w-full bg-purple-900/30 hover:bg-purple-800/50 border border-purple-700/50 text-purple-200 text-sm py-2 px-3 rounded-lg transition duration-300 flex items-center justify-center gap-2">
+                        <span>🎲 Generar Tema de Charla</span>
+                    </button>
+                    <div id="topicOutput" class="hidden mt-2 p-2 bg-black/40 rounded text-sm text-gray-300 italic border-l-2 border-purple-500"></div>
+                </div>
+            </div>
+
+            <!-- Main Copy Button -->
+            <div class="pt-2">
+                <button onclick="copyMainInvite()" id="copyBtn" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-4 rounded-xl transition duration-300 flex items-center justify-center gap-2 shadow-lg shadow-orange-900/20">
+                    <i data-lucide="share-2"></i> Copiar Link & Invitación
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Text for Main Copy -->
+    <textarea id="inviteText" class="hidden">
+🔥 *PARRILLA REENCUENTRO CÚPULA IBK* 🔥
+
+Señores, confirmen su asistencia en el link para calcular la carne.
+
+📅 *Fecha:* Viernes 30 de Enero
+⏰ *Hora:* 5:00 PM a 02:00 AM
+📍 *Lugar:* Av. Arequipa 2651 - Lince (Terraza)
+
+*Agéndalo aquí:* https://calendar.google.com/calendar/render?action=TEMPLATE&text=Parrilla+Reencuentro&dates=20260130T220000Z/20260131T070000Z
+
+¡Nos vemos! 🥩🍻
+    </textarea>
+
+    <!-- Load script at the end -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- FIREBASE SETUP ---
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        
+        let currentUser = null;
+
+        // Auth & Init
+        const initAuth = async () => {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (e) {
+                console.error("Auth error", e);
+            }
+        };
+        initAuth();
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                // Once authenticated, start listening to RSVPs
+                subscribeToRSVPs();
+            }
+        });
+
+        // --- FIRESTORE LOGIC ---
+        
+        function subscribeToRSVPs() {
+            // Using a simple collection query. In a real app, you might want ordering, 
+            // but for simplicity and rule compliance, we fetch and sort in memory.
+            // Path: artifacts/{appId}/public/data/rsvps
+            const q = collection(db, 'artifacts', appId, 'public', 'data', 'rsvps');
+            
+            onSnapshot(q, (snapshot) => {
+                const list = document.getElementById('attendeesList');
+                list.innerHTML = ''; // Clear list
+                
+                const attendees = [];
+                snapshot.forEach((doc) => {
+                    attendees.push(doc.data());
+                });
+
+                if (attendees.length === 0) {
+                    list.innerHTML = '<li class="text-center italic text-gray-500 text-xs py-2">Sé el primero en confirmar...</li>';
+                    return;
+                }
+
+                attendees.forEach(person => {
+                    const li = document.createElement('li');
+                    li.className = 'flex items-center gap-2 bg-gray-800/50 p-2 rounded';
+                    li.innerHTML = `
+                        <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                        <span class="font-medium truncate">${person.name || 'Anónimo'}</span>
+                    `;
+                    list.appendChild(li);
+                });
+            }, (error) => {
+                console.error("Error fetching attendees:", error);
+                const list = document.getElementById('attendeesList');
+                list.innerHTML = '<li class="text-red-400 text-xs">Error cargando lista</li>';
+            });
+        }
+
+        window.submitRSVP = async function() {
+            if (!currentUser) {
+                alert("Conectando... intenta en unos segundos.");
+                return;
+            }
+
+            const input = document.getElementById('rsvpNameInput');
+            const name = input.value.trim();
+
+            if (!name) {
+                alert("Por favor escribe tu nombre.");
+                return;
+            }
+
+            const btn = document.getElementById('btnSubmitRSVP');
+            const originalText = btn.innerText;
+            btn.innerText = "...";
+            btn.disabled = true;
+
+            try {
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'rsvps'), {
+                    name: name,
+                    uid: currentUser.uid, // Store who added it
+                    timestamp: Date.now()
+                });
+                
+                input.value = ''; // Clear input
+                // Visual feedback only (listener updates the list)
+                btn.innerText = "¡Listo!";
+                btn.classList.replace('bg-green-600', 'bg-blue-600');
+                
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                    btn.classList.replace('bg-blue-600', 'bg-green-600');
+                }, 2000);
+
+            } catch (e) {
+                console.error("Error saving RSVP", e);
+                alert("Hubo un error al guardar. Intenta de nuevo.");
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        };
+
+        // --- GEMINI & UI LOGIC ---
+        // (Simplified for this version to focus on RSVP, but keeping the Topic Generator)
+        
+        const apiKey = ""; // System provided
+
+        window.generateTopic = async function() {
+             const btn = document.getElementById('btnTopic');
+            const output = document.getElementById('topicOutput');
+            const originalText = btn.innerHTML;
+
+            btn.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
+            btn.disabled = true;
+            output.classList.add('hidden');
+
+            const prompt = "Genera un tema de conversación breve y polémico (pero divertido) para un grupo de amigos hombres en una parrilla. Solo una frase.";
+            
+            // Reusing the fetch logic logic inline for simplicity in this module scope or defining a helper
+            // Note: Since this is type=module, global functions need window assignment
+            try {
+                 const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+                 const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                });
+                const data = await response.json();
+                const result = data.candidates?.[0]?.content?.parts?.[0]?.text || "Hablemos de fútbol.";
+                
+                output.innerText = `"${result}"`;
+                output.classList.remove('hidden');
+            } catch(e) {
+                output.innerText = "Intenta de nuevo.";
+                output.classList.remove('hidden');
+            }
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+
+        // --- UTILS ---
+        window.copyMainInvite = function() {
+             const text = document.getElementById('inviteText').value;
+             if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    const btn = document.getElementById('copyBtn');
+                    btn.innerHTML = '<i data-lucide="check"></i> ¡Copiado!';
+                    setTimeout(() => {
+                        btn.innerHTML = '<i data-lucide="share-2"></i> Copiar Link & Invitación';
+                        if (typeof lucide !== 'undefined') lucide.createIcons();
+                    }, 2000);
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                });
+            } else {
+                alert("Copia este texto:\n\n" + text);
+            }
+        }
+
+        // Init Icons
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+        window.onload = () => { if (typeof lucide !== 'undefined') lucide.createIcons(); };
+
+    </script>
+</body>
+</html>
