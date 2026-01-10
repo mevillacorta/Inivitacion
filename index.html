@@ -104,9 +104,16 @@
                         <p class="font-semibold text-white leading-tight">Av. Arequipa 2651, Lince</p>
                         <p class="text-xs text-gray-500 mt-1">(Terraza)</p>
                     </div>
-                    <a href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=Parrilla+Reencuentro+Cúpula+IBK&dates=20260130T220000Z/20260131T070000Z&details=Reencuentro+oficial.+Ver+detalles+de+comida+en+el+link.&location=Av.+Arequipa+2651,+Lince+(Terraza)" target="_blank" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 p-2 rounded-lg transition border border-blue-500/30">
-                        <i data-lucide="calendar-plus" class="w-5 h-5"></i>
-                    </a>
+                    
+                    <!-- Botones de Acción: Maps y Calendar -->
+                    <div class="flex gap-2">
+                        <a href="https://www.google.com/maps/search/?api=1&query=Av.+Arequipa+2651,+Lince" target="_blank" class="bg-green-600/20 hover:bg-green-600/40 text-green-400 p-2 rounded-lg transition border border-green-500/30" title="Ver en Google Maps">
+                            <i data-lucide="map" class="w-5 h-5"></i>
+                        </a>
+                        <a href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=Parrilla+Reencuentro+Cúpula+IBK&dates=20260130T220000Z/20260131T070000Z&details=Reencuentro+oficial.+Ver+detalles+de+comida+en+el+link.&location=Av.+Arequipa+2651,+Lince+(Terraza)" target="_blank" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 p-2 rounded-lg transition border border-blue-500/30" title="Agendar en Calendar">
+                            <i data-lucide="calendar-plus" class="w-5 h-5"></i>
+                        </a>
+                    </div>
                 </div>
             </div>
 
@@ -142,6 +149,8 @@
                 <div class="flex items-center justify-between mb-4 border-b border-gray-700 pb-2">
                     <h3 class="text-xl text-green-400 flex items-center gap-2">
                         <i data-lucide="users" class="w-5 h-5"></i> Confirmados
+                        <!-- Contador de asistentes -->
+                        <span id="attendeeCount" class="bg-green-500/20 text-green-400 text-xs px-2 py-0.5 rounded-full border border-green-500/30">0</span>
                     </h3>
                     <button onclick="refreshList()" class="text-xs text-gray-500 hover:text-white transition" title="Actualizar lista">
                         <i data-lucide="refresh-cw" class="w-4 h-4"></i>
@@ -155,19 +164,20 @@
                     </button>
                 </div>
                 
-                <ul id="attendeesList" class="custom-scroll max-h-40 overflow-y-auto space-y-2 pr-1">
+                <!-- Lista aumentada a max-h-60 para ver más nombres -->
+                <ul id="attendeesList" class="custom-scroll max-h-60 overflow-y-auto space-y-2 pr-1">
                     <li class="text-center italic text-gray-600 text-xs py-2">Cargando lista...</li>
                 </ul>
                 
-                <p class="text-[10px] text-gray-600 text-center mt-2 italic">Sincronizado con Google Sheets</p>
+                <p class="text-[10px] text-gray-600 text-center mt-2 italic">Lista en vivo desde Google Sheets</p>
             </div>
 
             <!-- 4. Zona AI -->
             <div class="border border-purple-500/20 bg-purple-900/5 rounded-2xl p-5">
                 <h3 class="text-lg text-purple-400 mb-2 flex items-center gap-2">
-                    <i data-lucide="brain-circuit" class="w-4 h-4"></i> Zona AI: Datos Curiosos
+                    <i data-lucide="message-circle" class="w-4 h-4"></i> Te cuento algo...
                 </h3>
-                <p class="text-xs text-gray-400 mb-3">Impresiona a la gente con un dato random (Tech, 90s, Ciencia).</p>
+                <p class="text-xs text-gray-400 mb-3">Dale clic para que la IA suelte un dato curioso, una verdad sarcástica o algo sobre fútbol y negocios.</p>
                 <button onclick="generateTopic()" id="btnTopic" class="w-full bg-purple-900/20 hover:bg-purple-800/40 border border-purple-500/30 text-purple-200 text-sm py-2.5 px-3 rounded-lg transition duration-300 flex items-center justify-center gap-2">
                     <span>🧠 Lanzar Dato</span>
                 </button>
@@ -209,7 +219,7 @@ Gente, se armó la parrilla oficial.
         // ==========================================
         //  CONFIGURACIÓN PARA VERCEL
         // ==========================================
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzjReNESEh3cI7xjOciJqgC5-zkww4MCeRyQ-qRYqTc84mgg48TDj-tq7tpIVnJU6Zy/exec"; 
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxk5IA-g32sjyJS7mex7NeU0UDMYX3oSFDUqRjHtUEzOPU0rEzvEfxYlximo5iGocZ_/exec"; 
         
         // --- NUEVO: LINK DE TU GOOGLE SHEET ---
         // Pega aquí el link de tu archivo de Google Sheets (la URL completa del navegador) 
@@ -217,7 +227,7 @@ Gente, se armó la parrilla oficial.
         const LINK_DEL_EXCEL_PARA_TI = ""; 
         
         // Pega tu API Key de Gemini aquí abajo si quieres que funcione la IA en la web pública
-        const YOUR_GEMINI_API_KEY = ""; 
+        const YOUR_GEMINI_API_KEY = "AIzaSyDrIdZvfrIK_iP0_QEwTYIy_FOWKQcai3M"; 
 
         // ==========================================
         //  LÓGICA DEL SISTEMA
@@ -231,7 +241,7 @@ Gente, se armó la parrilla oficial.
 
         async function fetchAttendees() {
             try {
-                // Añadimos timestamp para evitar caché
+                // Añadimos timestamp para evitar caché en Vercel/Navegadores
                 const timestamp = new Date().getTime();
                 // IMPORTANTE: credentials: 'omit' evita problemas de cookies/auth de Google en iframes
                 const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=get&t=${timestamp}`, {
@@ -248,12 +258,17 @@ Gente, se armó la parrilla oficial.
                 const data = await response.json();
                 
                 const list = document.getElementById('attendeesList');
+                const countBadge = document.getElementById('attendeeCount');
                 list.innerHTML = '';
 
                 if (!Array.isArray(data) || data.length === 0) {
                     list.innerHTML = '<li class="text-center italic text-gray-600 text-xs py-2">Sé el primero en confirmar...</li>';
+                    countBadge.innerText = "0";
                     return;
                 }
+
+                // Actualizar contador
+                countBadge.innerText = data.length;
 
                 // Render list
                 data.forEach(person => {
@@ -261,7 +276,7 @@ Gente, se armó la parrilla oficial.
                     li.className = 'flex items-center gap-3 bg-gray-800/40 p-2.5 rounded-lg border border-gray-700/30';
                     const initial = person.name ? person.name.charAt(0).toUpperCase() : "?";
                     li.innerHTML = `
-                        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-green-700 flex items-center justify-center text-xs font-bold shadow-lg shadow-green-900/30">
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-green-700 flex items-center justify-center text-xs font-bold shadow-lg shadow-green-900/30 text-white">
                             ${initial}
                         </div>
                         <span class="font-medium text-sm text-gray-200 truncate">${person.name}</span>
@@ -291,7 +306,7 @@ Gente, se armó la parrilla oficial.
             btn.disabled = true;
 
             try {
-                // USANDO NO-CORS y credentials: omit para máxima compatibilidad
+                // USANDO NO-CORS para POST (Fire and forget)
                 await fetch(GOOGLE_SCRIPT_URL + "?action=add", {
                     method: "POST",
                     mode: 'no-cors', 
@@ -336,7 +351,8 @@ Gente, se armó la parrilla oficial.
             btn.disabled = true;
             output.classList.add('hidden');
 
-            const prompt = "Genera un dato curioso sorprendente y breve (estilo 'Sabías que...') que sea interesante para hombres de 30 a 35 años. Temas sugeridos: tecnología retro, ciencia, historia, cerveza, psicología masculina, fútbol o nostalgia de los 90. Solo el dato.";
+            // --- PROMPT ACTUALIZADO: ESTILO REVISTA MASCULINA + NOSTALGIA PERUANA 90s ---
+            const prompt = "Actúa como un editor de una revista para hombres en Perú (target 30-35 años). Dame un DATO CURIOSO REAL y breve sobre excesos de dinero, mujeres o fútbol mundial. Remata con una comparación graciosa usando referencias culturales peruanas de los 90s o 2000s (farándula antigua, fútbol local, programas de TV, jergas de la época). Habla natural, como en una parrilla, sin términos financieros forzados. Máximo 35 palabras.";
             
             let activeApiKey = "";
             if (typeof YOUR_GEMINI_API_KEY !== 'undefined' && YOUR_GEMINI_API_KEY !== "") {
