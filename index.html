@@ -3,7 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invitación Cúpula IBK</title>
+    <title>Parrilla Reencuentro Cúpula IBK</title>
+    
+    <!-- Optimización para WhatsApp (Open Graph) -->
+    <meta property="og:title" content="🔥 Parrilla Reencuentro Cúpula IBK">
+    <meta property="og:description" content="Viernes 30 ENE | 5:00 PM | Confirma tu asistencia aquí.">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=1000&auto=format&fit=crop">
+    <meta property="og:url" content="https://cupula-ibk.vercel.app">
+    <meta property="og:type" content="website">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -134,7 +142,7 @@
                     <h3 class="text-xl text-green-400 flex items-center gap-2">
                         <i data-lucide="users" class="w-5 h-5"></i> Confirmados
                     </h3>
-                    <button onclick="refreshList()" class="text-xs text-gray-500 hover:text-white transition">
+                    <button onclick="refreshList()" class="text-xs text-gray-500 hover:text-white transition" title="Actualizar lista">
                         <i data-lucide="refresh-cw" class="w-4 h-4"></i>
                     </button>
                 </div>
@@ -147,7 +155,7 @@
                 </div>
                 
                 <ul id="attendeesList" class="custom-scroll max-h-40 overflow-y-auto space-y-2 pr-1">
-                    <li class="text-center italic text-gray-600 text-xs py-2">Cargando desde la nube...</li>
+                    <li class="text-center italic text-gray-600 text-xs py-2">Cargando lista...</li>
                 </ul>
                 
                 <p class="text-[10px] text-gray-600 text-center mt-2 italic">Sincronizado con Google Sheets</p>
@@ -168,7 +176,7 @@
             <!-- Footer Actions -->
             <div class="pt-2 pb-6">
                 <button onclick="copyMainInvite()" id="copyBtn" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3.5 px-4 rounded-xl transition duration-300 flex items-center justify-center gap-2 shadow-lg shadow-orange-900/20 active:scale-95">
-                    <i data-lucide="share-2" class="w-5 h-5"></i> Copiar Invitación
+                    <i data-lucide="share-2" class="w-5 h-5"></i> Copiar Link de Invitación
                 </button>
             </div>
         </div>
@@ -186,7 +194,7 @@ Señores, entra al link para confirmar tu asistencia (se guarda en el Excel).
 🍻 *Tragos:* Cada uno lleva lo que quiere.
 🥩 *Comida:* Definimos por wsp.
 
-*Confirma aquí:* [LINK_DE_TU_WEB_AQUI]
+*Confirma aquí:* [LINK_DE_VERCEL_AQUI]
 
 ¡Nos vemos!
     </textarea>
@@ -194,13 +202,11 @@ Señores, entra al link para confirmar tu asistencia (se guarda en el Excel).
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
         // ==========================================
-        //  CONFIGURACIÓN GOOGLE SHEETS
+        //  CONFIGURACIÓN PARA VERCEL
         // ==========================================
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzjReNESEh3cI7xjOciJqgC5-zkww4MCeRyQ-qRYqTc84mgg48TDj-tq7tpIVnJU6Zy/exec"; 
         
-        // ==========================================
-        //  TU API KEY DE GEMINI (Opcional)
-        // ==========================================
+        // Pega tu API Key de Gemini aquí abajo si quieres que funcione la IA en la web pública
         const YOUR_GEMINI_API_KEY = ""; 
 
         // ==========================================
@@ -209,13 +215,13 @@ Señores, entra al link para confirmar tu asistencia (se guarda en el Excel).
 
         async function fetchAttendees() {
             try {
-                // Remove timestamps and extra headers for purest request possible
+                // Usamos redirect: 'follow' para seguir la redirección de Google Apps Script
                 const response = await fetch(GOOGLE_SCRIPT_URL + "?action=get", {
                     method: "GET",
-                    redirect: "follow" // Important for GAS
+                    redirect: "follow"
                 });
                 
-                if (!response.ok) throw new Error("Error: " + response.status);
+                if (!response.ok) throw new Error("Error de red");
 
                 const data = await response.json();
                 
@@ -242,12 +248,12 @@ Señores, entra al link para confirmar tu asistencia (se guarda en el Excel).
                 });
             } catch (e) {
                 console.error("Fetch error:", e);
-                // FRIENDLY ERROR MESSAGE WITH FALLBACK LINK
+                // Mensaje amigable si falla la carga (por temas de CORS o red)
                 const list = document.getElementById('attendeesList');
                 list.innerHTML = `
-                    <li class="text-center text-red-400 text-xs py-2 space-y-2">
-                        <span>⚠️ Error cargando vista previa.</span><br>
-                        <a href="${GOOGLE_SCRIPT_URL}?action=get" target="_blank" class="underline text-blue-400 hover:text-blue-300">Ver lista completa en navegador</a>
+                    <li class="text-center text-gray-500 text-xs py-2 space-y-2">
+                        <span>No se pudo cargar la lista.</span><br>
+                        <a href="${GOOGLE_SCRIPT_URL}?action=get" target="_blank" class="underline text-blue-400 hover:text-blue-300">Ver lista completa</a>
                     </li>`;
             }
         }
@@ -263,13 +269,13 @@ Señores, entra al link para confirmar tu asistencia (se guarda en el Excel).
             btn.disabled = true;
 
             try {
-                // USANDO NO-CORS para evitar bloqueos en el POST.
-                // Esto es "fire and forget", asumimos que llega si no salta error de red grave.
+                // USANDO NO-CORS: Esto es crítico para que funcione en webs estáticas (Vercel/GitHub Pages)
+                // Enviamos los datos "a ciegas" para que el navegador no bloquee la petición.
                 await fetch(GOOGLE_SCRIPT_URL + "?action=add", {
                     method: "POST",
-                    mode: 'no-cors', // Critical for client-side GAS POST
+                    mode: 'no-cors', 
                     headers: {
-                        "Content-Type": "application/json"
+                        "Content-Type": "text/plain;charset=utf-8"
                     },
                     body: JSON.stringify({ name: name, vote: "confirmado" })
                 });
@@ -277,7 +283,7 @@ Señores, entra al link para confirmar tu asistencia (se guarda en el Excel).
                 input.value = '';
                 btn.innerHTML = '<i data-lucide="check" class="w-5 h-5"></i>';
                 
-                // Refrescar lista (Esperamos un poco porque no-cors no nos avisa cuando termina)
+                // Esperamos un poco antes de refrescar porque Google tarda unos ms en procesar
                 setTimeout(() => {
                     fetchAttendees();
                     btn.innerHTML = originalHTML;
@@ -311,6 +317,7 @@ Señores, entra al link para confirmar tu asistencia (se guarda en el Excel).
 
             const prompt = "Genera un dato curioso sorprendente y breve (estilo 'Sabías que...') que sea interesante para hombres de 30 a 35 años. Temas sugeridos: tecnología retro, ciencia, historia, cerveza, psicología masculina, fútbol o nostalgia de los 90. Solo el dato.";
             
+            // Lógica para detectar API KEY
             let activeApiKey = "";
             if (typeof YOUR_GEMINI_API_KEY !== 'undefined' && YOUR_GEMINI_API_KEY !== "") {
                 activeApiKey = YOUR_GEMINI_API_KEY;
@@ -333,7 +340,7 @@ Señores, entra al link para confirmar tu asistencia (se guarda en el Excel).
             } catch(e) {
                 console.error(e);
                 output.innerText = (activeApiKey === "") 
-                    ? "Configura la API Key para usar la IA." 
+                    ? "⚠️ Para usar la IA en Vercel, debes agregar tu API Key en el código." 
                     : "Intenta de nuevo.";
                 output.classList.remove('hidden');
             }
@@ -344,7 +351,12 @@ Señores, entra al link para confirmar tu asistencia (se guarda en el Excel).
 
         // Utils
         window.copyMainInvite = function() {
-             const text = document.getElementById('inviteText').value;
+             // Intenta usar la URL actual del navegador si está disponible, si no, usa un placeholder
+             const currentUrl = window.location.href.includes('http') ? window.location.href : "[LINK_DE_TU_WEB]";
+             
+             let text = document.getElementById('inviteText').value;
+             text = text.replace("[LINK_DE_VERCEL_AQUI]", currentUrl);
+
              if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(text).then(() => {
                     const btn = document.getElementById('copyBtn');
@@ -360,6 +372,8 @@ Señores, entra al link para confirmar tu asistencia (se guarda en el Excel).
                         lucide.createIcons();
                     }, 2000);
                 });
+            } else {
+                alert("Copia este texto:\n\n" + text);
             }
         }
 
